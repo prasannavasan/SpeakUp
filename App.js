@@ -103,6 +103,7 @@ export default class App extends Component {
       results: [],
       partialResults: [],
       end: '',
+      statement: ''
     });
 
     try {
@@ -149,6 +150,7 @@ export default class App extends Component {
       results: [],
       partialResults: [],
       end: '',
+      statement: ''
     });
   };
   calculator(word) {
@@ -189,6 +191,9 @@ export default class App extends Component {
               </Text>
             );
           })}
+        </View>
+
+        <View>
           <Text>
             Total Syllables Detected = {this.calculator(this.state.statement)}
           </Text>
@@ -204,6 +209,7 @@ export default class App extends Component {
         >
           <View style={{ height: 70, flex: 1 }}>
             <TouchableHighlight onPress={this._destroyRecognizer}>
+              {/* <Image style={styles.button} source={require('./images/button.png')} /> */}
               <Text style={styles.action}>Reset</Text>
             </TouchableHighlight>
           </View>
