@@ -21,7 +21,8 @@ export default class App extends Component {
     started: '',
     results: [],
     partialResults: [],
-    statement: ''
+    statement: '',
+    backgroundColor:'#80FFFF'
   }
   constructor(props) {
     super(props);
@@ -30,7 +31,7 @@ export default class App extends Component {
     Voice.onSpeechEnd = this.onSpeechEnd;
     Voice.onSpeechError = this.onSpeechError;
     Voice.onSpeechResults = this.onSpeechResults;
-    Voice.onSpeechPartialResults = this.onSpeechPartialResults;
+    //Voice.onSpeechPartialResults = this.onSpeechPartialResults;
     Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged;
   }
 
@@ -59,6 +60,7 @@ export default class App extends Component {
     console.log('onSpeechEnd: ', e);
     this.setState({
       end: '√',
+      backgroundColor: '#80FFFF'
     });
   };
 
@@ -67,6 +69,7 @@ export default class App extends Component {
     console.log('onSpeechError: ', e);
     this.setState({
       error: JSON.stringify(e.error),
+      backgroundColor: '#80FFFF'
     });
   };
 
@@ -76,15 +79,27 @@ export default class App extends Component {
     this.setState({
       results: e.value,
     });
+    const resultWords = e.value[0].split(" ");
+    const givenWords = ["john","likes","to","eat","banana","and","drink","water","every","day","he","lead","a","healthy","life"];
+    var last_element = resultWords[resultWords.length - 1].toLowerCase();
+    if (givenWords.indexOf(last_element) > -1) {
+      this.setState({
+        backgroundColor: "#40FF19"
+      });
+    } else {
+      this.setState({
+        backgroundColor: "#CC0000"
+      });
+    }
   };
 
-  onSpeechPartialResults = e => {
-    // eslint-disable-next-line
-    console.log('onSpeechPartialResults: ', e);
-    this.setState({
-      partialResults: e.value,
-    });
-  };
+  // onSpeechPartialResults = e => {
+  //   // eslint-disable-next-line
+  //   console.log('onSpeechPartialResults: ', e);
+  //   this.setState({
+  //     partialResults: e.value,
+  //   });
+  // };
 
   onSpeechVolumeChanged = e => {
     // eslint-disable-next-line
@@ -103,7 +118,8 @@ export default class App extends Component {
       results: [],
       partialResults: [],
       end: '',
-      statement: ''
+      statement: '',
+      backgroundColor: '#80FFFF'
     });
 
     try {
@@ -115,15 +131,16 @@ export default class App extends Component {
   };
 
   _stopRecognizing = async () => {
-    this.setState({
-      statement: this.state.results.join()
-    });
     try {
       await Voice.stop();
     } catch (e) {
       //eslint-disable-next-line
       console.error(e);
     }
+    this.setState({
+      statement: this.state.results.join(),
+      backgroundColor: '#80FFFF'
+    });
   };
 
   _cancelRecognizing = async () => {
@@ -150,7 +167,8 @@ export default class App extends Component {
       results: [],
       partialResults: [],
       end: '',
-      statement: ''
+      statement: '',
+      backgroundColor: '#80FFFF'
     });
   };
   calculator(word) {
@@ -162,7 +180,13 @@ export default class App extends Component {
   }
   render() {
     return (
-      <View style={styles.container}>
+      <View style={{
+        flex: 1,
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: this.state.backgroundColor
+      }}>
 
         <View style={{ top: 100 }}>
           <Text style={styles.baseText}>
