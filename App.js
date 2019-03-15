@@ -5,12 +5,13 @@ import {
   Text,
   View,
   Image,
+  Button,
   TextInput
 } from "react-native";
 import Voice from "react-native-voice";
+import { createStackNavigator, createAppContainer } from "react-navigation";
 
-
-export default class App extends Component {
+class HomeScreen extends React.Component {
   state = {
     titleText: "Shall we read this",
     bodyText: 'John likes to eat banana and drink water everyday. He likes to lead a healthy life.',
@@ -22,7 +23,7 @@ export default class App extends Component {
     results: [],
     partialResults: [],
     statement: '',
-    backgroundColor:'#80FFFF'
+    backgroundColor: '#80FFFF'
   }
   constructor(props) {
     super(props);
@@ -80,7 +81,7 @@ export default class App extends Component {
       results: e.value,
     });
     const resultWords = e.value[0].split(" ");
-    const givenWords = ["john","likes","to","eat","banana","and","drink","water","every","day","he","lead","a","healthy","life"];
+    const givenWords = ["john", "likes", "to", "eat", "banana", "and", "drink", "water", "every", "day", "he", "lead", "a", "healthy", "life"];
     var last_element = resultWords[resultWords.length - 1].toLowerCase();
     if (givenWords.indexOf(last_element) > -1) {
       this.setState({
@@ -141,6 +142,12 @@ export default class App extends Component {
       statement: this.state.results.join(),
       backgroundColor: '#80FFFF'
     });
+    var score = this.score();
+    var totSyllables = this.calculator(this.state.statement);
+    this.props.navigation.navigate('Details', {
+      score: score,
+      totsyl: totSyllables
+    });
   };
 
   _cancelRecognizing = async () => {
@@ -177,6 +184,25 @@ export default class App extends Component {
     word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');   //word.sub!(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
     word = word.replace(/^y/, '');                                 //word.sub!(/^y/, '')
     return word.match(/[aeiouy]{1,2}/g).length;
+  }
+  score() {
+    var existing = 23;
+    var spoken = this.calculator(this.state.statement);
+    if (spoken < 5 | spoken > 80) {
+      return 1;
+    }
+    else if ((spoken < 10) | (spoken > 70)) {
+      return 2;
+    }
+    else if ((spoken < 15) | (spoken > 40)) {
+      return 3;
+    }
+    else if ((spoken < 20) | (spoken > 30)) {
+      return 4;
+    }
+    else {
+      return 5;
+    }
   }
   render() {
     return (
@@ -242,7 +268,7 @@ export default class App extends Component {
               <Text style={styles.action}>Start</Text>
             </TouchableHighlight>
           </View>
-          <View style={{ height: 70, flex: 1,}}>
+          <View style={{ height: 70, flex: 1, }}>
             <TouchableHighlight onPress={this._stopRecognizing}>
               <Text style={styles.action}>Stop</Text>
             </TouchableHighlight>
@@ -251,6 +277,52 @@ export default class App extends Component {
 
       </View>
     );
+  }
+}
+
+
+class DetailsScreen extends React.Component {
+  render() {
+    const { navigation } = this.props;
+    const score = navigation.getParam('score', '0');
+    const totalSyllables = navigation.getParam('totsyl', "0");
+
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+
+        <Text>
+          Syllables Expected: 25{"\n"}
+          Syllables Detected: {JSON.stringify(totalSyllables)}{"\n"}{"\n"}
+          Pitch: 17{"\n"}
+          Frequency: 7{"\n"}
+          Wave cycles: 47{"\n"}
+          Nodes: 21{"\n"}{"\n"}
+          Score: {JSON.stringify(score)}{"\n"}{"\n"}
+        </Text>
+        <Button
+          title="Go to Home"
+          onPress={() => this.props.navigation.navigate('Home')}
+        />
+      </View>
+    );
+  }
+}
+
+const AppNavigator = createStackNavigator(
+  {
+    Home: HomeScreen,
+    Details: DetailsScreen
+  },
+  {
+    initialRouteName: "Home",
+    headerMode: "none"
+  }
+);
+const AppContainer = createAppContainer(AppNavigator);
+
+export default class App extends Component {
+  render() {
+    return <AppContainer />;
   }
 }
 
