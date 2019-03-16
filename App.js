@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import {
-  TouchableHighlight, 
+  TouchableHighlight,
   StyleSheet,
   Text,
   View,
   Image,
   Button,
-  TextInput
+  TextInput,
+  ImageBackground
 } from "react-native";
 import Voice from "react-native-voice";
 import { createStackNavigator, createAppContainer } from "react-navigation";
@@ -23,7 +24,8 @@ class HomeScreen extends React.Component {
     results: [],
     partialResults: [],
     statement: '',
-    backgroundColor: '#80FFFF'
+    backgroundColor: '#80FFFF',
+    prompt: ''
   }
   constructor(props) {
     super(props);
@@ -85,11 +87,13 @@ class HomeScreen extends React.Component {
     var last_element = resultWords[resultWords.length - 1].toLowerCase();
     if (givenWords.indexOf(last_element) > -1) {
       this.setState({
-        backgroundColor: "#40FF19"
+        backgroundColor: "#40FF19",
+        prompt: "YOU ARE DOING AMAZING!"
       });
     } else {
       this.setState({
-        backgroundColor: "#CC0000"
+        backgroundColor: "#CC0000",
+        prompt: "Almost There, Let's Try Harder!"
       });
     }
   };
@@ -120,7 +124,8 @@ class HomeScreen extends React.Component {
       partialResults: [],
       end: '',
       statement: '',
-      backgroundColor: '#80FFFF'
+      backgroundColor: '#80FFFF',
+      prompt: ''
     });
 
     try {
@@ -140,7 +145,8 @@ class HomeScreen extends React.Component {
     }
     this.setState({
       statement: this.state.results.join(),
-      backgroundColor: '#80FFFF'
+      backgroundColor: '#80FFFF',
+      prompt:''
     });
     var score = this.score();
     var totSyllables = this.calculator(this.state.statement);
@@ -175,7 +181,8 @@ class HomeScreen extends React.Component {
       partialResults: [],
       end: '',
       statement: '',
-      backgroundColor: '#80FFFF'
+      backgroundColor: '#80FFFF',
+      prompt:''
     });
   };
   calculator(word) {
@@ -206,14 +213,15 @@ class HomeScreen extends React.Component {
   }
   render() {
     return (
-      <View style={{
-        flex: 1,
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: this.state.backgroundColor
-      }}>
-
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: this.state.backgroundColor
+        }}
+      >
         <View style={{ top: 100 }}>
           <Text style={styles.baseText}>
             <Text style={styles.titleText}>
@@ -228,25 +236,29 @@ class HomeScreen extends React.Component {
           </Text>
         </View>
 
-        <View style={{
-          flex: 1,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center"
-        }}>
-          {this.state.results.map((result, index) => {
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          {/* {this.state.results.map((result, index) => {
             return (
               <Text key={`result-${index}`} style={styles.stat}>
                 {result}
               </Text>
             );
-          })}
+          })} */}
         </View>
 
         <View>
-          <Text>
-            Total Syllables Detected = {this.calculator(this.state.statement)}
-          </Text>
+          {/* <Text>
+            Total Syllables Detected ={" "}
+            {this.calculator(this.state.statement)}
+          </Text> */}
+          <Text style={styles.bodyText}>{this.state.prompt}</Text>
         </View>
 
         <View
@@ -254,27 +266,41 @@ class HomeScreen extends React.Component {
             flex: 1,
             flexDirection: "row",
             justifyContent: "center",
-            alignItems: "flex-end"
+            alignItems: "flex-end",
+            bottom: 25
           }}
         >
           <View style={{ height: 70, flex: 1 }}>
             <TouchableHighlight onPress={this._destroyRecognizer}>
-              {/* <Image style={styles.button} source={require('./images/button.png')} /> */}
-              <Text style={styles.action}>Reset</Text>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Reset.png")}
+              >
+                <Text style={styles.action}>Reset</Text>
+              </ImageBackground>
             </TouchableHighlight>
           </View>
           <View style={{ height: 70, flex: 1 }}>
             <TouchableHighlight onPress={this._startRecognizing}>
-              <Text style={styles.action}>Start</Text>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Start.png")}
+              >
+                <Text style={styles.action}>Start</Text>
+              </ImageBackground>
             </TouchableHighlight>
           </View>
-          <View style={{ height: 70, flex: 1, }}>
+          <View style={{ height: 70, flex: 1 }}>
             <TouchableHighlight onPress={this._stopRecognizing}>
-              <Text style={styles.action}>Stop</Text>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Stop.png")}
+              >
+                <Text style={styles.action}>Stop</Text>
+              </ImageBackground>
             </TouchableHighlight>
           </View>
         </View>
-
       </View>
     );
   }
@@ -337,6 +363,7 @@ const styles = StyleSheet.create({
   button: {
     width: 50,
     height: 50,
+    right: -30,
   },
   button2: {
     width: 180,
@@ -347,6 +374,7 @@ const styles = StyleSheet.create({
     color: '#0000FF',
     marginVertical: 5,
     fontWeight: 'bold',
+    top: 50
   },
   welcome: {
     fontSize: 20,
