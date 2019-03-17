@@ -7,7 +7,8 @@ import {
   Image,
   Button,
   TextInput,
-  ImageBackground
+  ImageBackground,
+  AsyncStorage
 } from "react-native";
 import Voice from "react-native-voice";
 import { createStackNavigator, createAppContainer } from "react-navigation";
@@ -37,7 +38,6 @@ class HomeScreen extends React.Component {
     //Voice.onSpeechPartialResults = this.onSpeechPartialResults;
     Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged;
   }
-
   componentWillUnmount() {
     Voice.destroy().then(Voice.removeAllListeners);
   }
@@ -296,7 +296,7 @@ class HomeScreen extends React.Component {
                 style={styles.button}
                 source={require("./images/Stop.png")}
               >
-                <Text style={styles.action}>Stop</Text>
+              <Text style={styles.action}>Stop</Text>
               </ImageBackground>
             </TouchableHighlight>
           </View>
@@ -308,26 +308,85 @@ class HomeScreen extends React.Component {
 
 
 class DetailsScreen extends React.Component {
+
+  state = {
+    scoreArray: []
+  }
+  async saveKey(value) {
+    AsyncStorage.getItem('score3', (err, result) => {
+      const id = [value];
+      if (result !== null) {
+        console.log('Data Found', result);
+        var newIds = JSON.parse(result).concat(id);
+        AsyncStorage.setItem('score3', JSON.stringify(newIds));
+      } else {
+        console.log('Data Not Found');
+        AsyncStorage.setItem("score3", JSON.stringify(id));
+      }
+    });
+  }
+  async getKey() {
+    try {
+      const value = await AsyncStorage.getItem('score3');
+      if (value !== null) {
+        this.setState({
+          scoreArray: value
+        });
+        const valueCheck = JSON.parse(value);
+        var valueCheckNumberArray = valueCheck.map(Number);
+        const data = [50, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80];
+        console.log(JSON.parse(myArray));
+      }
+    } catch (error) {
+      console.log("Error retrieving data" + error);
+    }
+  }
+
   render() {
     const { navigation } = this.props;
     const score = navigation.getParam('score', '0');
     const totalSyllables = navigation.getParam('totsyl', "0");
 
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-
+      <View
+        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      >
         <Text>
           Syllables Expected: 25{"\n"}
-          Syllables Detected: {JSON.stringify(totalSyllables)}{"\n"}{"\n"}
+          Syllables Detected: {JSON.stringify(totalSyllables)}
+          {"\n"}
+          {"\n"}
           Pitch: 17{"\n"}
           Frequency: 7{"\n"}
           Wave cycles: 47{"\n"}
-          Nodes: 21{"\n"}{"\n"}
-          Score: {JSON.stringify(score)}{"\n"}{"\n"}
+          Nodes: 21{"\n"}
+          {"\n"}
+          Score: {JSON.stringify(score)}
+          {"\n"}
+          {"\n"}
         </Text>
+        <Text>Scores are = {this.state.scoreArray}</Text>
+        {/* <Button
+          title="Save My Score"
+          onPress={this.saveKey(JSON.stringify(score))}
+        /> */}
+        <Button
+          style={styles.formButton}
+          onPress={this.saveKey.bind(this,JSON.stringify(score))}
+          title="Save Key"
+          color="#2196f3"
+          accessibilityLabel="Get Key"
+        />
+        <Button
+          style={styles.formButton}
+          onPress={this.getKey.bind(this)}
+          title="Get Key"
+          color="#2196f3"
+          accessibilityLabel="Get Key"
+        />
         <Button
           title="Go to Home"
-          onPress={() => this.props.navigation.navigate('Home')}
+          onPress={() => this.props.navigation.navigate("Home")}
         />
       </View>
     );
