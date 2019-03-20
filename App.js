@@ -8,10 +8,21 @@ import {
   Button,
   TextInput,
   ImageBackground,
-  AsyncStorage
+  AsyncStorage,
+  Alert
 } from "react-native";
 import Voice from "react-native-voice";
 import { createStackNavigator, createAppContainer } from "react-navigation";
+import {
+  Grid,
+  LineChart,
+  XAxis,
+  YAxis,
+  PieChart
+} from "react-native-svg-charts";
+import Stars from "react-native-stars";
+import { Circle, G, Line } from "react-native-svg";
+
 
 class HomeScreen extends React.Component {
   state = {
@@ -306,52 +317,90 @@ class HomeScreen extends React.Component {
   }
 }
 
-
 class DetailsScreen extends React.Component {
-
   state = {
     scoreArray: []
-  }
+  };
   async saveKey(value) {
-    AsyncStorage.getItem('score3', (err, result) => {
+    AsyncStorage.getItem("score3", (err, result) => {
       const id = [value];
       if (result !== null) {
-        console.log('Data Found', result);
+        console.log("Data Found", result);
         var newIds = JSON.parse(result).concat(id);
-        AsyncStorage.setItem('score3', JSON.stringify(newIds));
+        AsyncStorage.setItem("score3", JSON.stringify(newIds));
       } else {
-        console.log('Data Not Found');
+        console.log("Data Not Found");
         AsyncStorage.setItem("score3", JSON.stringify(id));
       }
     });
+    Alert.alert(
+      'Saved',
+      'Your score is saved for Progress Tracking',
+      [
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ],
+      { cancelable: false },
+    );
   }
   async getKey() {
     try {
-      const value = await AsyncStorage.getItem('score3');
+      const value = await AsyncStorage.getItem("score3");
       if (value !== null) {
+        const valueCheck = JSON.parse(value);
         this.setState({
           scoreArray: value
         });
-        const valueCheck = JSON.parse(value);
         var valueCheckNumberArray = valueCheck.map(Number);
-        const data = [50, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80];
         console.log(JSON.parse(myArray));
       }
     } catch (error) {
       console.log("Error retrieving data" + error);
     }
+    this.props.navigation.navigate("Charts", {
+      DataValues: valueCheckNumberArray
+    });
   }
 
   render() {
     const { navigation } = this.props;
-    const score = navigation.getParam('score', '0');
-    const totalSyllables = navigation.getParam('totsyl', "0");
+    const score = navigation.getParam("score", "1");
+    const totalSyllables = navigation.getParam("totsyl", "0");
+    var message = '"Good Job!"';
+    if (score > 3) {
+      message = "Perfect! You are doing really good.";
+    }
+    else if (score > 1) {
+      message = "Good Job! Lets try more";
+    }
+    else {
+      message = "Good Job! Lets try harder again";
+    }
 
     return (
       <View
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
       >
-        <Text>
+        <Stars
+          display={score}
+          spacing={8}
+          count={5}
+          starSize={40}
+          backingColor="white"
+          fullStar={require("./images/starFilled.png")}
+          emptyStar={require("./images/starEmpty.png")}
+        />
+        <Text style={styles.titleText}>
+          {"\n"}
+          {"\n"}
+          {message}
+          {"\n"}
+          {"\n"}
+        </Text>
+        {/* <Text>
+          {"\n"}
+          {"\n"}
+          {"\n"}
+          {"\n"}
           Syllables Expected: 25{"\n"}
           Syllables Detected: {JSON.stringify(totalSyllables)}
           {"\n"}
@@ -365,29 +414,116 @@ class DetailsScreen extends React.Component {
           {"\n"}
           {"\n"}
         </Text>
-        <Text>Scores are = {this.state.scoreArray}</Text>
+        <Text>Scores are = {this.state.scoreArray}</Text> */}
         {/* <Button
           title="Save My Score"
           onPress={this.saveKey(JSON.stringify(score))}
         /> */}
         <Button
           style={styles.formButton}
-          onPress={this.saveKey.bind(this,JSON.stringify(score))}
-          title="Save Key"
+          onPress={this.saveKey.bind(this, JSON.stringify(score))}
+          title="Save My Score"
           color="#2196f3"
           accessibilityLabel="Get Key"
         />
-        <Button
+        <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
+        {/* <Button
           style={styles.formButton}
           onPress={this.getKey.bind(this)}
           title="Get Key"
           color="#2196f3"
           accessibilityLabel="Get Key"
-        />
+        /> */}
+        <Text>
+          {"\n"}
+          {"\n"}
+        </Text>
         <Button
-          title="Go to Home"
+          title="Home"
           onPress={() => this.props.navigation.navigate("Home")}
         />
+      </View>
+    );
+  }
+}
+
+class ChartsScreen extends React.Component {
+  render() {
+    const { navigation } = this.props;
+    const scoreArray = navigation.getParam("DataValues", []);
+    const data = scoreArray.slice(Math.max(scoreArray.length - 10, 1));
+    const dataPie = [90, 10]
+
+    const axesSvg = { fontSize: 10, fill: 'grey' };
+    const verticalContentInset = { top: 10, bottom: 10 }
+    const xAxisHeight = 30
+
+
+
+
+
+    const randomColor = () => ('#' + (Math.random() * 0xFFFFFF << 0).toString(16) + '000000').slice(0, 7)
+
+    const pieData = dataPie
+      .filter(value => value > 0)
+      .map((value, index) => ({
+        value,
+        svg: {
+          fill: randomColor(),
+          onPress: () => console.log("press", index)
+        },
+        key: `pie-${index}`
+      }));
+
+    return (
+      <View>
+        <View>
+          <PieChart style={{ height: 200, top:80 }} data={pieData} />
+        </View>
+        <View>
+          <View
+            style={{
+              height: 200,
+              padding: 20,
+              flexDirection: "row",
+              top: 100
+            }}
+          >
+            <YAxis
+              data={data}
+              style={{ marginBottom: xAxisHeight }}
+              contentInset={verticalContentInset}
+              svg={axesSvg}
+            />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <LineChart
+                style={{ flex: 1 }}
+                data={data}
+                contentInset={verticalContentInset}
+                svg={{ stroke: "rgb(134, 65, 244)" }}
+              >
+                <Grid />
+              </LineChart>
+              <XAxis
+                style={{ marginHorizontal: -10, height: xAxisHeight }}
+                data={data}
+                formatLabel={(value, index) => index}
+                contentInset={{ left: 10, right: 10 }}
+                svg={axesSvg}
+              />
+            </View>
+          </View>
+        </View>
+        <View style={{ top: 150 }}>
+          <Button
+            title="Go to Score"
+            onPress={() => this.props.navigation.navigate("Details")}
+          />
+          <Button
+            title="Go to Home"
+            onPress={() => this.props.navigation.navigate("Home")}
+          />
+        </View>
       </View>
     );
   }
@@ -396,7 +532,8 @@ class DetailsScreen extends React.Component {
 const AppNavigator = createStackNavigator(
   {
     Home: HomeScreen,
-    Details: DetailsScreen
+    Details: DetailsScreen,
+    Charts: ChartsScreen
   },
   {
     initialRouteName: "Home",
@@ -427,6 +564,10 @@ const styles = StyleSheet.create({
   button2: {
     width: 180,
     height: 180
+  },
+  buttonStar: {
+    width: 200,
+    height: 200
   },
   action: {
     textAlign: 'center',
