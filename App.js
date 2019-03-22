@@ -360,6 +360,15 @@ class DetailsScreen extends React.Component {
       DataValues: valueCheckNumberArray
     });
   }
+  _renderTest() {
+    if (true) {
+      return (
+        <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
+      );
+    } else {
+      return null;
+    }
+  }
 
   render() {
     const { navigation } = this.props;
@@ -376,26 +385,42 @@ class DetailsScreen extends React.Component {
       message = "Good Job! Lets try harder again";
     }
 
+
+
     return (
       <View
-        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between"
+        }}
       >
-        <Stars
-          display={score}
-          spacing={8}
-          count={5}
-          starSize={40}
-          backingColor="white"
-          fullStar={require("./images/starFilled.png")}
-          emptyStar={require("./images/starEmpty.png")}
-        />
+        <View style={{ top: 120 }}>
+          <Stars
+            display={score}
+            spacing={8}
+            count={5}
+            starSize={40}
+            backingColor="white"
+            fullStar={require("./images/starFilled.png")}
+            emptyStar={require("./images/starEmpty.png")}
+          />
+          <Text style={styles.titleText}>
+            {"\n"}
+          </Text>
+          <Text style={styles.titleText}>{message}</Text>
+        </View>
+        {/* <View>
+
+        </View>
         <Text style={styles.titleText}>
           {"\n"}
           {"\n"}
-          {message}
           {"\n"}
           {"\n"}
-        </Text>
+        </Text> */}
+
         {/* <Text>
           {"\n"}
           {"\n"}
@@ -419,14 +444,37 @@ class DetailsScreen extends React.Component {
           title="Save My Score"
           onPress={this.saveKey(JSON.stringify(score))}
         /> */}
-        <Button
-          style={styles.formButton}
-          onPress={this.saveKey.bind(this, JSON.stringify(score))}
-          title="Save My Score"
-          color="#2196f3"
-          accessibilityLabel="Get Key"
-        />
-        <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
+        <View style={{
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          bottom: 50
+        }}>
+          <Text style={styles.titleText}>
+            {"\n"}
+          </Text>
+          <Button
+            style={styles.formButton}
+            onPress={this.saveKey.bind(this, JSON.stringify(score))}
+            title="Save Score"
+            color="#2196f3"
+            accessibilityLabel="Get Key"
+          />
+          <Text style={styles.titleText}>
+            {"\n"}
+          </Text>
+          <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
+          <Text style={styles.titleText}>
+            {"\n"}
+          </Text>
+          {this._renderTest()}
+          <Text style={styles.titleText}>
+            {"\n"}
+          </Text>
+          <Button title="Connect" onPress={this.getKey.bind(this)} />
+        </View>
+
         {/* <Button
           style={styles.formButton}
           onPress={this.getKey.bind(this)}
@@ -434,14 +482,26 @@ class DetailsScreen extends React.Component {
           color="#2196f3"
           accessibilityLabel="Get Key"
         /> */}
-        <Text>
+        {/* <Text>
           {"\n"}
           {"\n"}
-        </Text>
-        <Button
+        </Text> */}
+        <TouchableHighlight
+          onPress={() => this.props.navigation.navigate("Home")}
+          style={{ bottom: 50, right: 175 }}
+        >
+          <ImageBackground
+            style={styles.button}
+            source={require("./images/home.png")}
+          >
+            <Text style={styles.action}>Home</Text>
+          </ImageBackground>
+        </TouchableHighlight>
+        {/* <Button
+          style={{ bottom: 100 }}
           title="Home"
           onPress={() => this.props.navigation.navigate("Home")}
-        />
+        /> */}
       </View>
     );
   }
@@ -478,7 +538,14 @@ class ChartsScreen extends React.Component {
     return (
       <View>
         <View>
-          <PieChart style={{ height: 200, top:80 }} data={pieData} />
+          <PieChart style={{ height: 200, top: 80 }} data={pieData} />
+        </View>
+        <View style={{ top: 100, left: 75 }}>
+          <Text style={styles.titleText}>
+            Accuracy of Speech (%)
+            {"\n"}
+            {"\n"}
+          </Text>
         </View>
         <View>
           <View
@@ -513,16 +580,50 @@ class ChartsScreen extends React.Component {
               />
             </View>
           </View>
+          <View style={{ top: 75, left: 40 }}>
+            <Text style={styles.titleText}>
+              Scores over the last 10 attempts
+            </Text>
+          </View>
         </View>
         <View style={{ top: 150 }}>
-          <Button
+          {/* <Button
             title="Go to Score"
             onPress={() => this.props.navigation.navigate("Details")}
-          />
-          <Button
+          /> */}
+          {/* <Button
             title="Go to Home"
             onPress={() => this.props.navigation.navigate("Home")}
-          />
+          /> */}
+          <Text style={styles.titleText}>
+            {"\n"}
+            {"\n"}
+            {"\n"}
+            {"\n"}
+
+          </Text>
+          <TouchableHighlight
+            onPress={() => this.props.navigation.navigate("Home")}
+            style={{ bottom: 50 }}
+          >
+            <ImageBackground
+              style={styles.button}
+              source={require("./images/home.png")}
+            >
+              <Text style={styles.action}>Home</Text>
+            </ImageBackground>
+          </TouchableHighlight>
+          <TouchableHighlight
+            onPress={() => this.props.navigation.navigate("Details")}
+            style={{ bottom: 105, right: -270 }}
+          >
+            <ImageBackground
+              style={styles.button}
+              source={require("./images/score.png")}
+            >
+              <Text style={styles.action}>Score</Text>
+            </ImageBackground>
+          </TouchableHighlight>
         </View>
       </View>
     );
