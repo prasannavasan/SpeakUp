@@ -9,7 +9,8 @@ import {
   TextInput,
   ImageBackground,
   AsyncStorage,
-  Alert
+  Alert,
+  Dimensions
 } from "react-native";
 import Voice from "react-native-voice";
 import { createStackNavigator, createAppContainer } from "react-navigation";
@@ -27,7 +28,7 @@ import { Circle, G, Line } from "react-native-svg";
 class HomeScreen extends React.Component {
   state = {
     titleText: "Shall we read this",
-    bodyText: 'John likes to eat banana and drink water everyday. He likes to lead a healthy life.',
+    bodyText: 'John likes to eat banana and drink water everyday. He loves leading a healthy life.',
     recognized: '',
     pitch: '',
     error: '',
@@ -94,7 +95,7 @@ class HomeScreen extends React.Component {
       results: e.value,
     });
     const resultWords = e.value[0].split(" ");
-    const givenWords = ["john", "likes", "to", "eat", "banana", "and", "drink", "water", "every", "day", "he", "lead", "a", "healthy", "life"];
+    const givenWords = ["john", "likes", "to", "eat", "banana", "and", "drink", "water", "every", "day", "he", "loves", "leading", "a", "healthy", "life"];
     var last_element = resultWords[resultWords.length - 1].toLowerCase();
     if (givenWords.indexOf(last_element) > -1) {
       this.setState({
@@ -161,11 +162,41 @@ class HomeScreen extends React.Component {
     });
     var score = this.score();
     var totSyllables = this.calculator(this.state.statement);
-    this.props.navigation.navigate('Details', {
+
+    const statementOutput = this.state.statement.toLowerCase();
+    const statementArray = statementOutput.split(" ");
+    const findDuplicates = this.stutterCheck(statementArray);
+    const repetitions = findDuplicates[1];
+    var boolCheck = false;
+    repetitions.forEach(num => {
+      if (num > 2) {
+        boolCheck = true;
+      }
+    })
+
+    this.props.navigation.navigate("Details", {
       score: score,
-      totsyl: totSyllables
+      totsyl: totSyllables,
+      svr: boolCheck
     });
   };
+
+  stutterCheck(arr) {
+  var a = [], b = [], prev;
+
+  arr.sort();
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] !== prev) {
+      a.push(arr[i]);
+      b.push(1);
+    } else {
+      b[b.length - 1]++;
+    }
+    prev = arr[i];
+  }
+
+  return [a, b];
+}
 
   _cancelRecognizing = async () => {
     try {
@@ -234,6 +265,30 @@ class HomeScreen extends React.Component {
         }}
       >
         <View style={{ top: 100 }}>
+          <TouchableHighlight
+            onPress={() => this.props.navigation.navigate("Help",{from:'Home'})}
+        >
+            <ImageBackground
+              style={{
+                width: 30,
+                height: 30,
+                left: 320
+              }}
+              source={require("./images/help.png")}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: "black",
+                  marginVertical: 5,
+                  fontSize: 10,
+                  top: 25
+                }}
+              >
+                Help
+              </Text>
+            </ImageBackground>
+          </TouchableHighlight>
           <Text style={styles.baseText}>
             <Text style={styles.titleText}>
               {this.state.titleText}
@@ -307,7 +362,7 @@ class HomeScreen extends React.Component {
                 style={styles.button}
                 source={require("./images/Stop.png")}
               >
-              <Text style={styles.action}>Stop</Text>
+                <Text style={styles.action}>Stop</Text>
               </ImageBackground>
             </TouchableHighlight>
           </View>
@@ -334,12 +389,10 @@ class DetailsScreen extends React.Component {
       }
     });
     Alert.alert(
-      'Saved',
-      'Your score is saved for Progress Tracking',
-      [
-        { text: 'OK', onPress: () => console.log('OK Pressed') },
-      ],
-      { cancelable: false },
+      "Saved",
+      "Your score is saved for Progress Tracking",
+      [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+      { cancelable: false }
     );
   }
   async getKey() {
@@ -360,10 +413,21 @@ class DetailsScreen extends React.Component {
       DataValues: valueCheckNumberArray
     });
   }
-  _renderTest() {
-    if (true) {
+  alertConnect() {
+    Alert.alert(
+      "SLP Connect!",
+      "Your will be connected with SLP for more assistance",
+      [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+      { cancelable: false }
+    );
+  }
+  _renderTest(severity) {
+    if (severity) {
       return (
-        <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
+        <Button
+          title="Training"
+          onPress={() => this.props.navigation.navigate("Training")}
+        />
       );
     } else {
       return null;
@@ -374,18 +438,15 @@ class DetailsScreen extends React.Component {
     const { navigation } = this.props;
     const score = navigation.getParam("score", "1");
     const totalSyllables = navigation.getParam("totsyl", "0");
+    const severity = navigation.getParam("svr", false);
     var message = '"Good Job!"';
     if (score > 3) {
       message = "Perfect! You are doing really good.";
-    }
-    else if (score > 1) {
+    } else if (score > 1) {
       message = "Good Job! Lets try more";
-    }
-    else {
+    } else {
       message = "Good Job! Lets try harder again";
     }
-
-
 
     return (
       <View
@@ -397,6 +458,33 @@ class DetailsScreen extends React.Component {
         }}
       >
         <View style={{ top: 120 }}>
+          <TouchableHighlight
+            onPress={() =>
+              this.props.navigation.navigate("Help", { from: "Details" })
+            }
+          >
+            <ImageBackground
+              style={{
+                width: 30,
+                height: 30,
+                left: 280,
+                top: -20
+              }}
+              source={require("./images/help.png")}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: "black",
+                  marginVertical: 5,
+                  fontSize: 10,
+                  top: 25
+                }}
+              >
+                Help
+              </Text>
+            </ImageBackground>
+          </TouchableHighlight>
           <Stars
             display={score}
             spacing={8}
@@ -406,9 +494,7 @@ class DetailsScreen extends React.Component {
             fullStar={require("./images/starFilled.png")}
             emptyStar={require("./images/starEmpty.png")}
           />
-          <Text style={styles.titleText}>
-            {"\n"}
-          </Text>
+          <Text style={styles.titleText}>{"\n"}</Text>
           <Text style={styles.titleText}>{message}</Text>
         </View>
         {/* <View>
@@ -444,16 +530,16 @@ class DetailsScreen extends React.Component {
           title="Save My Score"
           onPress={this.saveKey(JSON.stringify(score))}
         /> */}
-        <View style={{
-          flex: 1,
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          bottom: 50
-        }}>
-          <Text style={styles.titleText}>
-            {"\n"}
-          </Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            bottom: 50
+          }}
+        >
+          <Text style={styles.titleText}>{"\n"}</Text>
           <Button
             style={styles.formButton}
             onPress={this.saveKey.bind(this, JSON.stringify(score))}
@@ -461,18 +547,12 @@ class DetailsScreen extends React.Component {
             color="#2196f3"
             accessibilityLabel="Get Key"
           />
-          <Text style={styles.titleText}>
-            {"\n"}
-          </Text>
+          <Text style={styles.titleText}>{"\n"}</Text>
           <Button title="Progress Tracker" onPress={this.getKey.bind(this)} />
-          <Text style={styles.titleText}>
-            {"\n"}
-          </Text>
-          {this._renderTest()}
-          <Text style={styles.titleText}>
-            {"\n"}
-          </Text>
-          <Button title="Connect" onPress={this.getKey.bind(this)} />
+          <Text style={styles.titleText}>{"\n"}</Text>
+          {this._renderTest(severity)}
+          <Text style={styles.titleText}>{"\n"}</Text>
+          <Button title="Connect" onPress={this.alertConnect.bind(this)} />
         </View>
 
         {/* <Button
@@ -630,11 +710,364 @@ class ChartsScreen extends React.Component {
   }
 }
 
+class HelpScreen extends React.Component {
+  render() {
+    const { navigation } = this.props;
+    const root = navigation.getParam('from', 'Home');
+    return (
+      <View
+        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+      >
+        <Image
+          source={require("./images/helpguide.png")}
+          style={styles.backgroundImage}
+        />
+        <Button
+          title="Back"
+          onPress={() => this.props.navigation.navigate(root)}
+        />
+        <Text></Text>
+        <Text></Text>
+      </View>
+    );
+  }
+}
+
+class TrainingScreen extends React.Component {
+  state = {
+    titleText: "Shall we read this",
+    bodyText: 'W A T E R',
+    recognized: '',
+    pitch: '',
+    error: '',
+    end: '',
+    started: '',
+    results: [],
+    partialResults: [],
+    statement: '',
+    prompt: ''
+  }
+  constructor(props) {
+    super(props);
+    Voice.onSpeechStart = this.onSpeechStart;
+    Voice.onSpeechRecognized = this.onSpeechRecognized;
+    Voice.onSpeechEnd = this.onSpeechEnd;
+    Voice.onSpeechError = this.onSpeechError;
+    Voice.onSpeechResults = this.onSpeechResults;
+    //Voice.onSpeechPartialResults = this.onSpeechPartialResults;
+    Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged;
+  }
+  componentWillUnmount() {
+    Voice.destroy().then(Voice.removeAllListeners);
+  }
+
+  onSpeechStart = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechStart: ', e);
+    this.setState({
+      started: '√',
+    });
+  };
+
+  onSpeechRecognized = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechRecognized: ', e);
+    this.setState({
+      recognized: '√',
+    });
+  };
+
+  onSpeechEnd = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechEnd: ', e);
+    this.setState({
+      end: '√'
+    });
+  };
+
+  onSpeechError = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechError: ', e);
+    this.setState({
+      error: JSON.stringify(e.error)
+    });
+  };
+
+  onSpeechResults = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechResults: ', e);
+    this.setState({
+      results: e.value,
+    });
+  };
+
+  // onSpeechPartialResults = e => {
+  //   // eslint-disable-next-line
+  //   console.log('onSpeechPartialResults: ', e);
+  //   this.setState({
+  //     partialResults: e.value,
+  //   });
+  // };
+
+  onSpeechVolumeChanged = e => {
+    // eslint-disable-next-line
+    console.log('onSpeechVolumeChanged: ', e);
+    this.setState({
+      pitch: e.value,
+    });
+  };
+
+  _startRecognizing = async () => {
+    this.setState({
+      recognized: '',
+      pitch: '',
+      error: '',
+      started: '',
+      results: [],
+      partialResults: [],
+      end: '',
+      statement: '',
+      prompt: ''
+    });
+
+    try {
+      await Voice.start('en-US');
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+  };
+
+  _stopRecognizing = async () => {
+    try {
+      await Voice.stop();
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+    this.setState({
+      statement: this.state.results.join()
+    });
+    var score = this.score();
+    var totSyllables = this.calculator(this.state.statement);
+
+    const statementOutput = this.state.statement.toLowerCase();
+    const statementArray = statementOutput.split(" ");
+    const findDuplicates = this.stutterCheck(statementArray);
+    const repetitions = findDuplicates[1];
+    var boolCheck = false;
+    repetitions.forEach(num => {
+      if (num > 2) {
+        boolCheck = true;
+      }
+    })
+
+    this.props.navigation.navigate("Details", {
+      score: score,
+      totsyl: totSyllables,
+      svr: boolCheck
+    });
+  };
+
+  stutterCheck(arr) {
+    var a = [], b = [], prev;
+
+    arr.sort();
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] !== prev) {
+        a.push(arr[i]);
+        b.push(1);
+      } else {
+        b[b.length - 1]++;
+      }
+      prev = arr[i];
+    }
+
+    return [a, b];
+  }
+
+  _cancelRecognizing = async () => {
+    try {
+      await Voice.cancel();
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+  };
+
+  _destroyRecognizer = async () => {
+    try {
+      await Voice.destroy();
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+    this.setState({
+      recognized: '',
+      pitch: '',
+      error: '',
+      started: '',
+      results: [],
+      partialResults: [],
+      end: '',
+      statement: '',
+      prompt: ''
+    });
+  };
+  calculator(word) {
+    word = word.toLowerCase();                                     //word.downcase!
+    if (word.length <= 0) { return 0; }                             //return 1 if word.length <= 3
+    word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');   //word.sub!(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
+    word = word.replace(/^y/, '');                                 //word.sub!(/^y/, '')
+    return word.match(/[aeiouy]{1,2}/g).length;
+  }
+  score() {
+    var existing = 2;
+    var spoken = this.calculator(this.state.statement);
+
+    if (spoken < 3 | spoken > 0) {
+      return 5;
+    } else {
+      return 3;
+    }
+    // if (spoken < 5 | spoken > 80) {
+    //   return 1;
+    // }
+    // else if ((spoken < 10) | (spoken > 70)) {
+    //   return 2;
+    // }
+    // else if ((spoken < 15) | (spoken > 40)) {
+    //   return 3;
+    // }
+    // else if ((spoken < 20) | (spoken > 30)) {
+    //   return 4;
+    // }
+    // else {
+    //   return 5;
+    // }
+  }
+  render() {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: this.state.backgroundColor
+        }}
+      >
+        <View style={{ top: 100 }}>
+          <TouchableHighlight
+            onPress={() => this.props.navigation.navigate("Help", { from: 'Home' })}
+          >
+            <ImageBackground
+              style={{
+                width: 30,
+                height: 30,
+                left: 320
+              }}
+              source={require("./images/help.png")}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: "black",
+                  marginVertical: 5,
+                  fontSize: 10,
+                  top: 25
+                }}
+              >
+                Help
+              </Text>
+            </ImageBackground>
+          </TouchableHighlight>
+          <Text style={{ fontFamily: "Cochin"}}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: "bold"}}>
+              {this.state.titleText}
+              {"\n"}
+              {"\n"}
+              {"\n"}
+            </Text>
+            <Text style={{
+              fontSize: 50,
+              fontWeight: "bold"}} numberOfLines={1}>
+              {this.state.bodyText}
+            </Text>
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          {/* {this.state.results.map((result, index) => {
+            return (
+              <Text key={`result-${index}`} style={styles.stat}>
+                {result}
+              </Text>
+            );
+          })} */}
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "flex-end",
+            bottom: 25
+          }}
+        >
+          <View style={{ height: 70, flex: 1 }}>
+            <TouchableHighlight onPress={this._destroyRecognizer}>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Reset.png")}
+              >
+                <Text style={styles.action}>Reset</Text>
+              </ImageBackground>
+            </TouchableHighlight>
+          </View>
+          <View style={{ height: 70, flex: 1 }}>
+            <TouchableHighlight onPress={this._startRecognizing}>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Start.png")}
+              >
+                <Text style={styles.action}>Start</Text>
+              </ImageBackground>
+            </TouchableHighlight>
+          </View>
+          <View style={{ height: 70, flex: 1 }}>
+            <TouchableHighlight onPress={this._stopRecognizing}>
+              <ImageBackground
+                style={styles.button}
+                source={require("./images/Stop.png")}
+              >
+                <Text style={styles.action}>Stop</Text>
+              </ImageBackground>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </View>
+    );
+  }
+}
+
 const AppNavigator = createStackNavigator(
   {
     Home: HomeScreen,
     Details: DetailsScreen,
-    Charts: ChartsScreen
+    Charts: ChartsScreen,
+    Help: HelpScreen,
+    Training: TrainingScreen
   },
   {
     initialRouteName: "Home",
@@ -660,7 +1093,7 @@ const styles = StyleSheet.create({
   button: {
     width: 50,
     height: 50,
-    right: -30,
+    right: -30
   },
   button2: {
     width: 180,
@@ -671,10 +1104,10 @@ const styles = StyleSheet.create({
     height: 200
   },
   action: {
-    textAlign: 'center',
-    color: '#0000FF',
+    textAlign: "center",
+    color: "#0000FF",
     marginVertical: 5,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     top: 50
   },
   welcome: {
@@ -701,5 +1134,11 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     fontWeight: "bold"
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: "stretch", // or 'stretch'
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height
   }
 });
